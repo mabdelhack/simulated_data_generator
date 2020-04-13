@@ -12,7 +12,7 @@ class SimulatedDataGenerator(object):
         self.fill_na = fill_na
         self.data_proportions = [positive_correlated, negative_correlated, uncorrelated]
 
-    def generate_data_logistic(self, number_of_samples, proportion_positive=0.5):
+    def generate_data_logistic(self, number_of_samples, proportion_positive=0.5, min_mult=0.2, max_mult=1.0):
         """Generates data that would be used for a classification task where the target is either 1 or 0"""
         label = np.random.rand(number_of_samples)
         y = label < proportion_positive
@@ -23,7 +23,7 @@ class SimulatedDataGenerator(object):
         # positively correlated
         x[:, :int(data_edges[0] * self.sample_shape)] = x[:, :int(data_edges[0]*self.sample_shape)] + \
             np.matmul(np.expand_dims(y, axis=1),
-                      np.abs(np.random.uniform(low=0.5, high=10.0,
+                      np.abs(np.random.uniform(low=min_mult, high=max_mult,
                                                size=(1, int(self.sample_shape*self.data_proportions[0]))
                                                )
                              )
@@ -32,7 +32,7 @@ class SimulatedDataGenerator(object):
         x[:, int(data_edges[0] * self.sample_shape):int(data_edges[1] * self.sample_shape)] = \
             x[:, int(data_edges[0] * self.sample_shape):int(data_edges[1] * self.sample_shape)] - \
             np.matmul(np.expand_dims(y, axis=1),
-                      np.abs(np.random.uniform(low=0.5, high=10.0,
+                      np.abs(np.random.uniform(low=min_mult, high=max_mult,
                                                size=(1, int(self.sample_shape*self.data_proportions[1]))
                                                )
                              )

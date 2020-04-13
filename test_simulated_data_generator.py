@@ -16,7 +16,7 @@ class TestSimulatedDataGenerator(unittest.TestCase):
                                            negative_correlated=correlation_proportions[1],
                                            uncorrelated=correlation_proportions[2])
 
-        x, missing_flag, y = generator.generate_data_logistic(1024)
+        x, missing_flag, y = generator.generate_data_logistic(1024, min_mult=0.0, max_mult=1.0)
         correlation_values = np.zeros(number_of_variables)
         for variable_idx in range(number_of_variables):
             feature_vector = x[:, variable_idx]
@@ -31,3 +31,4 @@ class TestSimulatedDataGenerator(unittest.TestCase):
         plt.figure()
         plt.plot(np.arange(number_of_variables), correlation_values)
         plt.show()
+        print('done')
