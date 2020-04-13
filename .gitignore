@@ -1,3 +1,7 @@
 
 *.xml
 *.iml
+.ipynb_checkpoints/demo_simulated_data-checkpoint.ipynb
+__pycache__/simulated_data_generator.cpython-35.pyc
+__pycache__/simulated_data_generator.cpython-35.pyc
+*.pyc
