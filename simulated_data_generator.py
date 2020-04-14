@@ -3,11 +3,11 @@ import numpy as np
 
 class SimulatedDataGenerator(object):
     """This class creates simulation data"""
-    def __init__(self, sample_shape, max_missing=0, noise_variance=1, fill_na=None,
+    def __init__(self, sample_shape, missing_portion=0, noise_variance=1, fill_na=np.nan,
                  positive_correlated=0.25, negative_correlated=0.25, uncorrelated=0.5):
         assert positive_correlated + negative_correlated + uncorrelated == 1.0
         self.sample_shape = sample_shape
-        self.max_missing = max_missing
+        self.missing_portion = missing_portion
         self.noise_variance = noise_variance
         self.fill_na = fill_na
         self.data_proportions = [positive_correlated, negative_correlated, uncorrelated]
@@ -38,8 +38,12 @@ class SimulatedDataGenerator(object):
                              )
                       )
         missing_flag = np.zeros((number_of_samples, self.sample_shape))
-        if self.max_missing > 0:
-            pass
+        if self.missing_portion > 0:
+            missing_probability = np.random.uniform(low=0.0, high=1.0, size=missing_flag.shape)
+            missing_flag = missing_probability < self.missing_portion
+            missing_flag = missing_flag.astype(int)
+        x = np.ma.array(x, mask=missing_flag)
+        x = x.filled(self.fill_na)
         # shuffling samples
         sample_order = np.arange(number_of_samples)
         np.random.shuffle(sample_order)
@@ -48,8 +52,14 @@ class SimulatedDataGenerator(object):
         y = y[sample_order]
         return x, missing_flag, y
 
-    def generate_from_data(self, data, number_of_samples):
-        """TBI"""
-        x = data[0]
-        y = data[1]
-        pass
+    @staticmethod
+    def generate_missing(x, missing_portion, fill_na):
+        """This generates a version of data already generated with missing values"""
+        missing_flag = np.zeros(x.shape)
+        if missing_portion > 0:
+            missing_probability = np.random.uniform(low=0.0, high=1.0, size=x.shape)
+            missing_flag = missing_probability < missing_portion
+            missing_flag = missing_flag.astype(int)
+        x = np.ma.array(x, mask=missing_flag)
+        x = x.filled(fill_na)
+        return x, missing_flag
