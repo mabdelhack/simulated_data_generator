@@ -12,3 +12,6 @@ Below are the correlation results of creating 1024 samples of 256 variables of w
 
 
 ![](./images/variable_sample.png)
+
+## Imputation
+TBD
