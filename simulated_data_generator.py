@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
+import pandas as pd
 
 
 class SimulatedDataGenerator(object):
@@ -63,3 +65,52 @@ class SimulatedDataGenerator(object):
         x = np.ma.array(x, mask=missing_flag)
         x = x.filled(fill_na)
         return x, missing_flag
+
+    @staticmethod
+    def save_data(data, folder_name, split=None):
+        from os import mkdir, path
+        x = data[0]
+        y = data[1]
+        index_column = np.arange(x.shape[0])
+        column_names = ['var_{}'.format(n) for n in range(x.shape[1])]
+        column_names.insert(0, 'ID')
+        data_concatenated = np.concatenate((np.expand_dims(index_column, axis=1), x, np.expand_dims(y, axis=1)), axis=1)
+        column_names.append('output')
+        df = pd.DataFrame(data=data_concatenated, columns=column_names)
+        df.set_index(['ID'], inplace=True)
+        if split is not None:
+
+            df = split_flag(df, split['ratio'], number_of_splits=split['number_of_splits'], stratify=df['output'])
+
+        mkdir(folder_name)
+        to_save_file = path.join(folder_name, 'training_validation_dataset.csv')
+        df.to_csv(to_save_file)
+
+
+def split_flag(data, ratio, number_of_splits, stratify=None):
+    """Create train-test splits and append flags that indicate each one"""
+    if stratify is None:
+        split_object = ShuffleSplit(n_splits=number_of_splits,
+                                    train_size=ratio,
+                                    test_size=1 - ratio,
+                                    random_state=0)
+        all_indices = np.array(data.index)
+        split_idx = 0
+        for train_index, test_index in split_object.split(all_indices):
+            data['train_split_{}'.format(split_idx)] = False
+            data.loc[data.index[train_index], 'train_split_{}'.format(split_idx)] = True
+            split_idx += 1
+    else:
+        split_object = StratifiedShuffleSplit(n_splits=number_of_splits,
+                                              train_size=ratio,
+                                              test_size=1 - ratio,
+                                              random_state=0)
+        all_indices = np.array(data.index)
+        split_idx = 0
+        for train_index, test_index in split_object.split(all_indices, stratify.values):
+            data['train_split_{}'.format(split_idx)] = False
+            data.loc[data.index[train_index], 'train_split_{}'.format(split_idx)] = True
+            split_idx += 1
+    return data
+
+
