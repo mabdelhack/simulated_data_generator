@@ -14,4 +14,4 @@ Below are the correlation results of creating 1024 samples of 256 variables of w
 ![](./images/variable_sample.png)
 
 ## Imputation
-TBD
+imputation_test.py tests methods from the library [FancyImpute](https://pypi.org/project/fancyimpute/) to restore the missing values introduced to the data and compares it to the real values.
