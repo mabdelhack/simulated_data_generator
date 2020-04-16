@@ -71,10 +71,19 @@ class SimulatedDataGenerator(object):
         from os import mkdir, path
         x = data[0]
         y = data[1]
+        if len(data) > 2:
+            missing_flag = data[2]
+        else:
+            missing_flag = np.empty(shape=(x.shape[0], 0))
         index_column = np.arange(x.shape[0])
         column_names = ['var_{}'.format(n) for n in range(x.shape[1])]
+        if len(data) > 2:
+            for n in range(missing_flag.shape[1]):
+                column_names.append('missing_flag_{}'.format(n))
         column_names.insert(0, 'ID')
-        data_concatenated = np.concatenate((np.expand_dims(index_column, axis=1), x, np.expand_dims(y, axis=1)), axis=1)
+        data_concatenated = np.concatenate((np.expand_dims(index_column, axis=1),
+                                            x, missing_flag,
+                                            np.expand_dims(y, axis=1)), axis=1)
         column_names.append('output')
         df = pd.DataFrame(data=data_concatenated, columns=column_names)
         df.set_index(['ID'], inplace=True)
