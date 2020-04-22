@@ -54,6 +54,46 @@ class SimulatedDataGenerator(object):
         y = y[sample_order]
         return x, missing_flag, y
 
+    def generate_data_linear(self, number_of_samples, data_range=[0, 1], min_mult=0.2, max_mult=1.0):
+        """Generates data that would be used for a classification task where the target is either 1 or 0"""
+        label = np.linspace(data_range[0], data_range[1], number_of_samples) + \
+            np.random.normal(loc=0.0, scale=self.noise_variance, size=number_of_samples)
+        y = label.astype(float)
+        x = np.random.normal(loc=0.0, scale=self.noise_variance, size=(number_of_samples, self.sample_shape))
+        data_edges = np.cumsum(self.data_proportions)
+
+        # positively correlated
+        x[:, :int(data_edges[0] * self.sample_shape)] = x[:, :int(data_edges[0]*self.sample_shape)] + \
+            np.matmul(np.expand_dims(y, axis=1),
+                      np.abs(np.random.uniform(low=min_mult, high=max_mult,
+                                               size=(1, int(self.sample_shape*self.data_proportions[0]))
+                                               )
+                             )
+                      )
+        # negatively correlated
+        x[:, int(data_edges[0] * self.sample_shape):int(data_edges[1] * self.sample_shape)] = \
+            x[:, int(data_edges[0] * self.sample_shape):int(data_edges[1] * self.sample_shape)] - \
+            np.matmul(np.expand_dims(y, axis=1),
+                      np.abs(np.random.uniform(low=min_mult, high=max_mult,
+                                               size=(1, int(self.sample_shape*self.data_proportions[1]))
+                                               )
+                             )
+                      )
+        missing_flag = np.zeros((number_of_samples, self.sample_shape))
+        if self.missing_portion > 0:
+            missing_probability = np.random.uniform(low=0.0, high=1.0, size=missing_flag.shape)
+            missing_flag = missing_probability < self.missing_portion
+            missing_flag = missing_flag.astype(int)
+        x = np.ma.array(x, mask=missing_flag)
+        x = x.filled(self.fill_na)
+        # shuffling samples
+        sample_order = np.arange(number_of_samples)
+        np.random.shuffle(sample_order)
+        x = x[sample_order]
+        missing_flag = missing_flag[sample_order]
+        y = y[sample_order]
+        return x, missing_flag, y
+
     @staticmethod
     def generate_missing(x, missing_portion, fill_na):
         """This generates a version of data already generated with missing values"""
