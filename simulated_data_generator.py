@@ -101,6 +101,9 @@ class SimulatedDataGenerator(object):
         if missing_portion > 0:
             missing_probability = np.random.uniform(low=0.0, high=1.0, size=x.shape)
             missing_flag = missing_probability < missing_portion
+            all_missing = x.shape[0] - sum(missing_flag) == 0
+            if any(all_missing):
+                missing_flag[0, all_missing] = False
             missing_flag = missing_flag.astype(int)
         x = np.ma.array(x, mask=missing_flag)
         x = x.filled(fill_na)
